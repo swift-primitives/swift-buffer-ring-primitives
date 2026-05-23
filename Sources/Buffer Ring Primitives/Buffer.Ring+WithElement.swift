@@ -1,0 +1,117 @@
+import Ordinal_Primitives_Standard_Library_Integration
+import Affine_Primitives_Standard_Library_Integration
+// MARK: - Borrowing Element Access for Ring (~Copyable)
+
+extension Buffer.Ring where Element: ~Copyable {
+
+    /// Calls `body` with a borrow of the front element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withFront<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        return body(unsafe storage.pointer(at: header.head).pointee)
+    }
+
+    /// Calls `body` with a borrow of the back element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withBack<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        return body(
+            unsafe storage.pointer(
+                at: Index.Modular.advanced(
+                    header.head,
+                    by: Index<Element>.Offset(fromZero: header.count.subtract.saturating(.one).map(Ordinal.init)),
+                    capacity: header.capacity
+                )
+            ).pointee
+        )
+    }
+}
+
+// MARK: - Borrowing Element Access for Ring.Bounded (~Copyable)
+
+extension Buffer.Ring.Bounded where Element: ~Copyable {
+
+    /// Calls `body` with a borrow of the front element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withFront<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        return body(unsafe storage.pointer(at: header.head).pointee)
+    }
+
+    /// Calls `body` with a borrow of the back element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withBack<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        return body(
+            unsafe storage.pointer(
+                at: Index.Modular.advanced(
+                    header.head,
+                    by: Index<Element>.Offset(fromZero: header.count.subtract.saturating(.one).map(Ordinal.init)),
+                    capacity: header.capacity
+                )
+            ).pointee
+        )
+    }
+}
+
+// MARK: - Borrowing Element Access for Ring.Inline (~Copyable)
+
+extension Buffer.Ring.Inline where Element: ~Copyable {
+
+    /// Calls `body` with a borrow of the front element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withFront<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        let bounded = Index<Element>.Bounded<capacity>(header.head)!
+        let ptr: UnsafePointer<Element> = unsafe storage.pointer(at: bounded)
+        return body(unsafe ptr.pointee)
+    }
+
+    /// Calls `body` with a borrow of the back element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withBack<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        let bounded = Index<Element>.Bounded<capacity>(
+            Index.Modular.advanced(
+                header.head,
+                by: Index<Element>.Offset(fromZero: header.count.subtract.saturating(.one).map(Ordinal.init)),
+                capacity: header.capacity
+            )
+        )!
+        let ptr: UnsafePointer<Element> = unsafe storage.pointer(at: bounded)
+        return body(unsafe ptr.pointee)
+    }
+}
+
+// MARK: - Borrowing Element Access for Ring.Small (~Copyable)
+
+extension Buffer.Ring.Small where Element: ~Copyable {
+
+    /// Calls `body` with a borrow of the front element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withFront<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        switch _storage {
+        case .heap(let heap): return heap.withFront(body)
+        case .inline(let buf): return buf.withFront(body)
+        }
+    }
+
+    /// Calls `body` with a borrow of the back element.
+    ///
+    /// - Precondition: The buffer is not empty.
+    @inlinable
+    public func withBack<R: ~Copyable>(_ body: (borrowing Element) -> R) -> R {
+        switch _storage {
+        case .heap(let heap): return heap.withBack(body)
+        case .inline(let buf): return buf.withBack(body)
+        }
+    }
+}
