@@ -1,5 +1,7 @@
-import Buffer_Ring_Primitives_Test_Support
 import Buffer_Ring_Primitives
+import Buffer_Ring_Primitives_Test_Support
+import Memory_Heap_Primitives
+import Storage_Contiguous_Primitives
 import Testing
 
 @Suite("Buffer.Ring.Bounded")
@@ -15,7 +17,7 @@ extension RingBoundedTests.Unit {
 
     @Test
     func `full rejection — pushBack returns element when full`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 2)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 2)
         let cap = buffer.capacity.underlying.rawValue
 
         // Fill to capacity
@@ -25,7 +27,8 @@ extension RingBoundedTests.Unit {
             #expect(rejected == nil)
             i += 1
         }
-        #expect(buffer.isFull)
+        let bufferIsFull = buffer.isFull
+        #expect(bufferIsFull)
 
         // Next push is rejected
         let rejected = buffer.push.back(999)
@@ -34,7 +37,7 @@ extension RingBoundedTests.Unit {
 
     @Test
     func `full rejection — pushFront returns element when full`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 2)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 2)
         let cap = buffer.capacity.underlying.rawValue
 
         var i: UInt = 0
@@ -49,33 +52,35 @@ extension RingBoundedTests.Unit {
 
     @Test
     func `peekFront and peekBack (Copyable)`() throws {
-        let buffer = try Buffer<Int>.Ring.Bounded([10, 20, 30], capacity: 4)
-        #expect(buffer.peek.front == 10)
-        #expect(buffer.peek.back == 30)
-        #expect(buffer.count == 3)
+        let buffer = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded([10, 20, 30], capacity: 4)
+        // Peek-views-only — see the lifetime-checker note in the growable peek test.
+        let bufferPeekFront = buffer.peek.front
+        #expect(bufferPeekFront == 10)
+        let bufferPeekBack = buffer.peek.back
+        #expect(bufferPeekBack == 30)
     }
 
     @Test
     func `removeAll clears buffer`() throws {
-        var buffer = try Buffer<Int>.Ring.Bounded([1, 2, 3], capacity: 4)
+        var buffer = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded([1, 2, 3], capacity: 4)
         buffer.remove.all()
-        #expect(buffer.isEmpty)
+        let bufferIsEmpty = buffer.isEmpty
+        #expect(bufferIsEmpty)
     }
 
     @Test
-    func `Sequence.Protocol iteration (Copyable)`() throws {
-        let buffer = try Buffer<Int>.Ring.Bounded([10, 20, 30], capacity: 4)
+    func `Iterable iteration (Copyable)`() throws {
+        let buffer = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded([10, 20, 30], capacity: 4)
+        // Piecewise dual conformer (Iterable via 2-segment Chunk iterator +
+        // Sequenceable via scalar). `forEach` is the `Sequenceable` borrowing terminal.
         var collected: [Int] = []
-        var iter = buffer.makeIterator()
-        while let value = iter.next() {
-            collected.append(value)
-        }
+        buffer.forEach { collected.append($0) }
         #expect(collected == [10, 20, 30])
     }
 
     @Test
     func `checkpoint and restore`() throws {
-        var buffer = try Buffer<Int>.Ring.Bounded([10, 20], capacity: 8)
+        var buffer = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded([10, 20], capacity: 8)
         let cp = buffer.checkpoint
         _ = buffer.push.back(30)
         _ = buffer.push.back(40)
@@ -93,19 +98,21 @@ extension RingBoundedTests.EdgeCase {
 
     @Test
     func `capacity-of-1 ring`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 1)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 1)
         let rejected = buffer.push.back(42)
         #expect(rejected == nil)
-        #expect(buffer.isFull)
+        let bufferIsFull = buffer.isFull
+        #expect(bufferIsFull)
 
         let value = buffer.pop.front()
         #expect(value == 42)
-        #expect(buffer.isEmpty)
+        let bufferIsEmpty = buffer.isEmpty
+        #expect(bufferIsEmpty)
     }
 
     @Test
     func `full buffer pushFront evicts nothing — returns element`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 2)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 2)
         let cap = buffer.capacity.underlying.rawValue
         var i: UInt = 0
         while i < cap {
@@ -116,12 +123,13 @@ extension RingBoundedTests.EdgeCase {
         let rejected = buffer.push.front(999)
         #expect(rejected == 999)
         // Original elements untouched
-        #expect(buffer.peek.front == 0)
+        let bufferPeekFront = buffer.peek.front
+        #expect(bufferPeekFront == 0)
     }
 
     @Test
     func `restore after wrapping`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 4)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 4)
         _ = buffer.push.back(1)
         _ = buffer.push.back(2)
         _ = buffer.push.back(3)
@@ -143,7 +151,7 @@ extension RingBoundedTests.Integration {
 
     @Test
     func `interleaved push/pop cycles`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 3)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 3)
         _ = buffer.push.back(1)
         _ = buffer.push.back(2)
         #expect(buffer.pop.front() == 1)
@@ -152,12 +160,13 @@ extension RingBoundedTests.Integration {
         _ = buffer.push.back(4)
         #expect(buffer.pop.front() == 3)
         #expect(buffer.pop.front() == 4)
-        #expect(buffer.isEmpty)
+        let bufferIsEmpty = buffer.isEmpty
+        #expect(bufferIsEmpty)
     }
 
     @Test
     func `fill/drain cycle`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 4)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 4)
         let cap = Int(buffer.capacity.underlying.rawValue)
 
         // Fill
@@ -166,12 +175,14 @@ extension RingBoundedTests.Integration {
             _ = buffer.push.back(i)
             i += 1
         }
-        #expect(buffer.isFull)
+        let bufferIsFull = buffer.isFull
+        #expect(bufferIsFull)
 
         // Drain
         var drained: [Int] = []
         buffer.drain { drained.append($0) }
-        #expect(buffer.isEmpty)
+        let bufferIsEmpty = buffer.isEmpty
+        #expect(bufferIsEmpty)
         #expect(drained.count == cap)
     }
 }
@@ -198,7 +209,7 @@ extension RingBoundedTests.Integration {
 extension RingBoundedTests.Unit {
     @Test
     func `peek front and back return stable values across repeated reads (finding #12 regression guard)`() {
-        var buffer = Buffer<Int>.Ring.Bounded(minimumCapacity: 4)
+        var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 4)
         _ = buffer.push.back(10)
         _ = buffer.push.back(20)
         _ = buffer.push.back(30)

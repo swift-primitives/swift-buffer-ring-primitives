@@ -9,8 +9,10 @@
 //
 // ===----------------------------------------------------------------------===//
 
-import Buffer_Ring_Primitives_Test_Support
 import Buffer_Ring_Primitives
+import Buffer_Ring_Primitives_Test_Support
+import Memory_Heap_Primitives
+import Storage_Contiguous_Primitives
 import Testing
 
 @Suite("Buffer.Ring.Bounded+Builder")
@@ -29,7 +31,7 @@ extension RingBoundedBuilderTests.WithinCapacity {
 
     @Test
     func `Constructs within capacity`() throws {
-        let ring = try Buffer<Int>.Ring.Bounded(minimumCapacity: 8) {
+        let ring = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 8) {
             1
             2
             3
@@ -42,8 +44,8 @@ extension RingBoundedBuilderTests.Overflow {
 
     @Test
     func `Throws on overflow`() {
-        do {
-            _ = try Buffer<Int>.Ring.Bounded(minimumCapacity: 2) {
+        do throws(Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded.Error) {
+            _ = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 2) {
                 1
                 2
                 3
@@ -59,7 +61,7 @@ extension RingBoundedBuilderTests.NonCopyable {
 
     @Test
     func `Constructs noncopyable bounded ring`() throws {
-        let ring = try Buffer<Move>.Ring.Bounded(minimumCapacity: 4) {
+        let ring = try Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Move>>.Ring.Bounded(minimumCapacity: 4) {
             Move(1)
             Move(2)
         }

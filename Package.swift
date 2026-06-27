@@ -12,33 +12,65 @@ let package = Package(
         .visionOS(.v26),
     ],
     products: [
+        // MARK: - Type modules (lean ~Copyable types; Copyable-requiring conformances live in the ops modules per [MOD-004])
         .library(name: "Buffer Ring Primitive", targets: ["Buffer Ring Primitive"]),
+        .library(name: "Buffer Ring Bounded Primitive", targets: ["Buffer Ring Bounded Primitive"]),
+        // MARK: - Ops modules (one per variant); `Buffer Ring Primitives` doubles as the [MOD-005] umbrella
         .library(name: "Buffer Ring Primitives", targets: ["Buffer Ring Primitives"]),
-        .library(name: "Buffer Ring Inline Primitives", targets: ["Buffer Ring Inline Primitives"]),
+        .library(name: "Buffer Ring Bounded Primitives", targets: ["Buffer Ring Bounded Primitives"]),
         .library(name: "Buffer Ring Primitives Test Support", targets: ["Buffer Ring Primitives Test Support"]),
     ],
     dependencies: [
-        .package(path: "../swift-buffer-primitives"),
-        .package(path: "../swift-storage-primitives"),
-        .package(path: "../swift-cyclic-index-primitives"),
-        .package(path: "../swift-index-primitives"),
-        .package(path: "../swift-affine-primitives"),
-        .package(path: "../swift-ordinal-primitives"),
-        .package(path: "../swift-memory-primitives"),
-        .package(path: "../swift-sequence-primitives"),
-        .package(path: "../swift-cardinal-primitives"),
+        .package(url: "https://github.com/swift-primitives/swift-buffer-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-storage-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-memory-allocation-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-span-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-cyclic-index-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-index-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-affine-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-ordinal-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-memory-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-sequence-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-iterator-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-memory-heap-primitives.git", branch: "main"),
     ],
     targets: [
 
-        // MARK: - Buffer Ring Primitive — type declarations only (A10 poison isolation).
+        // MARK: - Type modules — lean ~Copyable types + @usableFromInline internal ops co-located with storage ([MOD-036])
         .target(
             name: "Buffer Ring Primitive",
             dependencies: [
                 .product(name: "Buffer Primitive", package: "swift-buffer-primitives"),
-                .product(name: "Buffer Growth Primitives", package: "swift-buffer-primitives"),
-                .product(name: "Storage Heap Primitives", package: "swift-storage-primitives"),
-                .product(name: "Storage Inline Primitives", package: "swift-storage-primitives"),
-                .product(name: "Storage Initialization Primitives", package: "swift-storage-primitives"),
+                .product(name: "Buffer Protocol Primitives", package: "swift-buffer-primitives"),
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Ledgered Primitives", package: "swift-storage-primitives"),
+                .product(name: "Cyclic Index Primitives", package: "swift-cyclic-index-primitives"),
+                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                .product(name: "Memory Primitives", package: "swift-memory-primitives"),
+                .product(name: "Affine Primitives", package: "swift-affine-primitives"),
+                .product(name: "Ordinal Primitives", package: "swift-ordinal-primitives"),
+            ]
+        ),
+        .target(
+            name: "Buffer Ring Bounded Primitive",
+            dependencies: [
+                "Buffer Ring Primitive",
+                .product(name: "Buffer Primitive", package: "swift-buffer-primitives"),
+                .product(name: "Buffer Protocol Primitives", package: "swift-buffer-primitives"),
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
+                .product(name: "Store Initialization Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Ledgered Primitives", package: "swift-storage-primitives"),
                 .product(name: "Cyclic Index Primitives", package: "swift-cyclic-index-primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Memory Primitives", package: "swift-memory-primitives"),
@@ -47,29 +79,46 @@ let package = Package(
             ]
         ),
 
-        // MARK: - Buffer Ring Primitives — operations + Sequence conformances.
+        // MARK: - Ops modules — Copyable-requiring conformances isolated per [MOD-004].
+        //         `Buffer Ring Primitives` (the base conformances module) doubles as the
+        //         [MOD-005] umbrella: it re-exports every variant module (two module forms only —
+        //         `… Primitive` type modules and `… Primitives` ops modules).
         .target(
             name: "Buffer Ring Primitives",
             dependencies: [
                 "Buffer Ring Primitive",
-                .product(name: "Storage Heap Primitives", package: "swift-storage-primitives"),
+                "Buffer Ring Bounded Primitives",
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
                 .product(name: "Cyclic Index Primitives", package: "swift-cyclic-index-primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Memory Primitives", package: "swift-memory-primitives"),
                 .product(name: "Sequence Primitives", package: "swift-sequence-primitives"),
+                .product(name: "Iterable", package: "swift-iterator-primitives"),
+                .product(name: "Iterator Chunk Primitives", package: "swift-iterator-primitives"),
             ]
         ),
         .target(
-            name: "Buffer Ring Inline Primitives",
+            name: "Buffer Ring Bounded Primitives",
             dependencies: [
+                "Buffer Ring Bounded Primitive",
                 "Buffer Ring Primitive",
-                "Buffer Ring Primitives",
-                .product(name: "Storage Heap Primitives", package: "swift-storage-primitives"),
-                .product(name: "Storage Inline Primitives", package: "swift-storage-primitives"),
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Store Protocol Primitives", package: "swift-storage-primitives"),
+                .product(name: "Span Protocol Primitives", package: "swift-span-primitives"),
                 .product(name: "Cyclic Index Primitives", package: "swift-cyclic-index-primitives"),
                 .product(name: "Index Primitives", package: "swift-index-primitives"),
                 .product(name: "Memory Primitives", package: "swift-memory-primitives"),
                 .product(name: "Sequence Primitives", package: "swift-sequence-primitives"),
+                .product(name: "Iterable", package: "swift-iterator-primitives"),
+                .product(name: "Iterator Chunk Primitives", package: "swift-iterator-primitives"),
             ]
         ),
 
@@ -78,9 +127,11 @@ let package = Package(
             name: "Buffer Ring Primitives Test Support",
             dependencies: [
                 "Buffer Ring Primitives",
-                "Buffer Ring Inline Primitives",
-                .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
-                .product(name: "Index Primitives", package: "swift-index-primitives"),
+                "Buffer Ring Bounded Primitives",
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
                 .product(name: "Memory Primitives Test Support", package: "swift-memory-primitives"),
             ],
             path: "Tests/Support"
@@ -89,11 +140,16 @@ let package = Package(
         // MARK: - Tests
         .testTarget(
             name: "Buffer Ring Primitives Tests",
-            dependencies: ["Buffer Ring Primitives", "Buffer Ring Primitives Test Support"]
-        ),
-        .testTarget(
-            name: "Buffer Ring Inline Primitives Tests",
-            dependencies: ["Buffer Ring Inline Primitives", "Buffer Ring Primitives Test Support"]
+            dependencies: [
+                "Buffer Ring Primitives",
+                .product(name: "Sequence Hint Primitives", package: "swift-sequence-primitives"),
+                "Buffer Ring Primitives Test Support",
+                .product(name: "Buffer Primitives Test Support", package: "swift-buffer-primitives"),
+                .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
+                .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
+                .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
+            ]
         ),
     ],
     swiftLanguageModes: [.v6]
