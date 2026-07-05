@@ -24,4 +24,4 @@ public import Store_Ledgered_Primitives
 /// `Store.`Protocol`` conformance carries (the ring rides the ledger for its count), which is
 /// what `__ColumnDirect`'s `__StoreProtocol` refinement requires. Only the conformance + twin
 /// land here; ring op generalization stays W3.
-extension Buffer.Ring: __ColumnDirect where S: Store.Ledgered.`Protocol`, S: ~Copyable {}
+extension Buffer.Ring: Store.Direct where S: Store.Ledgered.`Protocol`, S: ~Copyable {}
