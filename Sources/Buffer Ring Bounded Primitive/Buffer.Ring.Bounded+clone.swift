@@ -12,7 +12,7 @@
 import Affine_Primitives_Standard_Library_Integration
 public import Index_Primitives
 public import Memory_Allocator_Primitive
-public import Memory_Heap_Primitives
+public import Memory_Allocator_Protocol_Primitives
 import Ordinal_Primitives_Standard_Library_Integration
 public import Storage_Contiguous_Primitives
 
@@ -25,10 +25,10 @@ extension Buffer.Ring.Bounded where S: ~Copyable {
     ///
     /// - Complexity: O(`count`)
     @inlinable
-    public func clone<E>() -> Self
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>, E: Copyable {
+    public func clone<Element, Resource: Memory.Growable & ~Copyable>() -> Self
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element>, Element: Copyable {
         var fresh = S.create(minimumCapacity: header.capacity)
-        var slot: Index<E> = .zero
+        var slot: Index<Element> = .zero
         let end = header.count.map(Ordinal.init)
         while slot < end {
             fresh.initialize(at: slot, to: self[slot])

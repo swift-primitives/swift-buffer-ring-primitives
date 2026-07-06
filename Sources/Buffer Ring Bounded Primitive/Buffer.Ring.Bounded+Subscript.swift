@@ -11,7 +11,7 @@ extension Buffer.Ring.Bounded where S: ~Copyable {
     ///
     /// - Parameter index: The logical index of the element to access.
     @inlinable
-    public subscript<E: ~Copyable>(index: Index<E>) -> E where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public subscript(index: Index<S.Element>) -> S.Element {
         _read {
             let physical = Index.Modular.physical(
                 forLogical: index,

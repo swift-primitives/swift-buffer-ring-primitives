@@ -1,10 +1,11 @@
 import Affine_Primitives_Standard_Library_Integration
 import Index_Primitives
 public import Memory_Allocator_Primitive
-public import Memory_Heap_Primitives
+public import Memory_Allocator_Protocol_Primitives
 import Ordinal_Primitives_Standard_Library_Integration
 public import Storage_Contiguous_Primitives
 public import Storage_Primitive
+public import Store_Ledgered_Primitives
 
 // MARK: - Extensions for Ring
 
@@ -15,8 +16,8 @@ extension Buffer.Ring where S: ~Copyable {
     /// The actual capacity may be larger than requested per H6 —
     /// `header.capacity` is set from `storage.capacity`.
     @inlinable
-    public init<E: ~Copyable>(minimumCapacity: Index<E>.Count)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public init<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(minimumCapacity: Index<Element>.Count)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         let storage = S.create(minimumCapacity: minimumCapacity)
         self.init(
             header: Self.Header(capacity: storage.capacity),
@@ -26,9 +27,9 @@ extension Buffer.Ring where S: ~Copyable {
 
     /// Creates an empty growable ring buffer (the substrate decides the start capacity).
     @inlinable
-    public init<E: ~Copyable>()
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
-        self.init(minimumCapacity: Index<E>.Count.zero)
+    public init<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>()
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
+        self.init(minimumCapacity: Index<Element>.Count.zero)
     }
 
     /// The number of elements in the buffer.
@@ -45,8 +46,8 @@ extension Buffer.Ring where S: ~Copyable {
 
     /// Ensures the buffer can hold at least `minimumCapacity` elements.
     @inlinable
-    public mutating func reserveCapacity<E: ~Copyable>(_ minimumCapacity: Index<E>.Count)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func reserveCapacity<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ minimumCapacity: Index<Element>.Count)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         if minimumCapacity > header.capacity {
             _growTo(minimumCapacity)
         }
@@ -55,8 +56,8 @@ extension Buffer.Ring where S: ~Copyable {
     // MARK: - Growth (internal)
 
     @inlinable
-    mutating func _grow<E: ~Copyable>()
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _grow<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>()
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         if header.capacity == .zero {
             _growTo(.one)
         } else {
@@ -65,8 +66,8 @@ extension Buffer.Ring where S: ~Copyable {
     }
 
     @inlinable
-    mutating func _growTo<E: ~Copyable>(_ minimumCapacity: Index<E>.Count)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _growTo<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ minimumCapacity: Index<Element>.Count)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         var newStorage = S.create(minimumCapacity: minimumCapacity)
         // Read the new capacity before `newStorage` is consumed by the
         // assignment below — the substrate is `~Copyable`, so `storage = newStorage`
@@ -103,10 +104,10 @@ extension Buffer.Ring where S: ~Copyable {
     ///
     /// - Complexity: O(n) where n is the number of elements.
     @inlinable
-    public mutating func compact<E: ~Copyable>() where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func compact<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>() where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         guard header.count < header.capacity else { return }
         if header.isEmpty {
-            storage = Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E>.create(minimumCapacity: .zero)
+            storage = S.create(minimumCapacity: .zero)
             header = .init(capacity: storage.capacity)
             return
         }
@@ -119,34 +120,34 @@ extension Buffer.Ring where S: ~Copyable {
 extension Buffer.Ring where S: ~Copyable {
 
     @usableFromInline
-    mutating func _pushBack<E: ~Copyable>(_ element: consuming E)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _pushBack<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ element: consuming Element)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         if header.isFull { _grow() }
         Self.pushBack(consume element, header: &header, storage: &storage)
     }
 
     @usableFromInline
-    mutating func _popFront<E: ~Copyable>() -> E
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _popFront() -> S.Element
+    where S: Store.Ledgered.`Protocol` {
         Self.popFront(header: &header, storage: &storage)
     }
 
     @usableFromInline
-    mutating func _pushFront<E: ~Copyable>(_ element: consuming E)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _pushFront<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ element: consuming Element)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         if header.isFull { _grow() }
         Self.pushFront(consume element, header: &header, storage: &storage)
     }
 
     @usableFromInline
-    mutating func _popBack<E: ~Copyable>() -> E
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _popBack() -> S.Element
+    where S: Store.Ledgered.`Protocol` {
         Self.popBack(header: &header, storage: &storage)
     }
 
     @usableFromInline
-    mutating func _removeAll<E: ~Copyable>()
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    mutating func _removeAll()
+    where S: Store.Ledgered.`Protocol` {
         Self.deinitializeAll(header: &header, storage: &storage)
     }
 
@@ -156,15 +157,15 @@ extension Buffer.Ring where S: ~Copyable {
 
     /// Pushes an element to the back of the ring (grows if full).
     @inlinable
-    public mutating func pushBack<E: ~Copyable>(_ element: consuming E)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func pushBack<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ element: consuming Element)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         _pushBack(consume element)
     }
 
     /// Pushes an element to the front of the ring (grows if full).
     @inlinable
-    public mutating func pushFront<E: ~Copyable>(_ element: consuming E)
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func pushFront<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ element: consuming Element)
+    where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         _pushFront(consume element)
     }
 
@@ -172,8 +173,8 @@ extension Buffer.Ring where S: ~Copyable {
     ///
     /// - Precondition: The buffer is not empty.
     @inlinable
-    public mutating func popFront<E: ~Copyable>() -> E
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func popFront() -> S.Element
+    where S: Store.Ledgered.`Protocol` {
         _popFront()
     }
 
@@ -181,15 +182,15 @@ extension Buffer.Ring where S: ~Copyable {
     ///
     /// - Precondition: The buffer is not empty.
     @inlinable
-    public mutating func popBack<E: ~Copyable>() -> E
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func popBack() -> S.Element
+    where S: Store.Ledgered.`Protocol` {
         _popBack()
     }
 
     /// Removes all elements.
     @inlinable
-    public mutating func removeAll<E: ~Copyable>()
-    where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public mutating func removeAll()
+    where S: Store.Ledgered.`Protocol` {
         _removeAll()
     }
 }

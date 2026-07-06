@@ -1,6 +1,7 @@
 import Affine_Primitives_Standard_Library_Integration
 public import Index_Primitives
 public import Memory_Allocator_Primitive
+public import Memory_Allocator_Protocol_Primitives
 public import Memory_Heap_Primitives
 import Ordinal_Primitives_Standard_Library_Integration
 public import Storage_Contiguous_Primitives
@@ -24,9 +25,9 @@ extension Buffer.Ring.Bounded where S: ~Copyable {
     ///   - capacity: The fixed capacity for the buffer.
     /// - Throws: ``Error/capacityExceeded`` if `elements.count` exceeds `capacity`.
     @inlinable
-    public init<E>(_ elements: [E], capacity: UInt) throws(Self.Error) where S == Storage<Memory.Allocator<Memory.Heap>>.Contiguous<E> {
+    public init<Element, Resource: Memory.Growable & ~Copyable>(_ elements: [Element], capacity: UInt) throws(Self.Error) where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         guard elements.count <= Int(capacity) else { throw .capacityExceeded }
-        var buffer = Self(minimumCapacity: Index<E>.Count(Cardinal(capacity)))
+        var buffer = Self(minimumCapacity: Index<Element>.Count(Cardinal(capacity)))
         for element in elements {
             _ = buffer._pushBack(element)
         }
