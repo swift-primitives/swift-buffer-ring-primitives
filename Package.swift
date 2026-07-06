@@ -33,6 +33,8 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-sequence-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-iterator-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-memory-heap-primitives.git", branch: "main"),
+        // W3.1 .Small compile-probe dependency (test-only): the Memory.Small growable leaf.
+        .package(url: "https://github.com/swift-primitives/swift-memory-small-primitives.git", branch: "main"),
     ],
     targets: [
 
@@ -149,6 +151,7 @@ let package = Package(
                 .product(name: "Buffer Primitives Test Support", package: "swift-buffer-primitives"),
                 .product(name: "Storage Contiguous Primitives", package: "swift-storage-primitives"),
                 .product(name: "Memory Heap Primitives", package: "swift-memory-heap-primitives"),
+                .product(name: "Memory Small Primitives", package: "swift-memory-small-primitives"),
                 .product(name: "Memory Allocator Primitive", package: "swift-memory-allocation-primitives"),
                 .product(name: "Storage Protocol Primitives", package: "swift-storage-primitives"),
             ]
