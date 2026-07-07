@@ -9,8 +9,8 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import Store_Protocol_Primitives
 public import Store_Ledgered_Primitives
+public import Store_Protocol_Primitives
 
 // MARK: - Column.Direct (the axis-changing-alias fence, [DS-028])
 

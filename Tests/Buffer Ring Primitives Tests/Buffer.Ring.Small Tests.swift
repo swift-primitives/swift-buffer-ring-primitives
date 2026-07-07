@@ -32,7 +32,7 @@ extension RingSmallCoverageTests {
 
         // FORM-2 enqueue: push 16 `Int`s (128 bytes) past the 64-byte inline budget,
         // forcing at least one inline→heap spill during growth.
-        for value in 1 ... 16 {
+        for value in 1...16 {
             ring.pushBack(value)
         }
         #expect(ring.count == 16)
