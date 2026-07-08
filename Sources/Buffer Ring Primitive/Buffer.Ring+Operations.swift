@@ -56,7 +56,7 @@ extension Buffer.Ring where S: ~Copyable {
     // MARK: - Growth (internal)
 
     @inlinable
-    mutating func _grow<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>()
+    package mutating func _grow<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>()
     where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         if header.capacity == .zero {
             _growTo(.one)
@@ -66,7 +66,7 @@ extension Buffer.Ring where S: ~Copyable {
     }
 
     @inlinable
-    mutating func _growTo<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ minimumCapacity: Index<Element>.Count)
+    package mutating func _growTo<Element: ~Copyable, Resource: Memory.Growable & ~Copyable>(_ minimumCapacity: Index<Element>.Count)
     where S == Storage<Memory.Allocator<Resource>>.Contiguous<Element> {
         var newStorage = S.create(minimumCapacity: minimumCapacity)
         // Read the new capacity before `newStorage` is consumed by the
