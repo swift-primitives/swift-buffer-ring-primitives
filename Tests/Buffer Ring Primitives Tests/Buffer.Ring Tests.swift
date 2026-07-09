@@ -9,8 +9,8 @@ import Testing
 // pattern — @Suite in extensions of generic type specializations is silently
 // not discovered by Swift Testing.
 
-@Suite("Buffer.Ring")
-struct RingGrowableTests {
+@Suite
+struct `Buffer.Ring Tests` {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
     @Suite struct Integration {}
@@ -18,7 +18,7 @@ struct RingGrowableTests {
 
 // MARK: - Unit
 
-extension RingGrowableTests.Unit {
+extension `Buffer.Ring Tests`.Unit {
 
     @Test
     func `FIFO ordering`() {
@@ -220,7 +220,7 @@ extension RingGrowableTests.Unit {
 
 // MARK: - Edge Cases
 
-extension RingGrowableTests.EdgeCase {
+extension `Buffer.Ring Tests`.EdgeCase {
 
     @Test
     func `empty buffer operations`() {
@@ -268,7 +268,7 @@ extension RingGrowableTests.EdgeCase {
 
 // MARK: - Integration
 
-extension RingGrowableTests.Integration {
+extension `Buffer.Ring Tests`.Integration {
 
     @Test
     func `interleaved push/pop maintains order`() {

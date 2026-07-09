@@ -4,8 +4,8 @@ import Memory_Heap_Primitives
 import Storage_Contiguous_Primitives
 import Testing
 
-@Suite("Buffer.Ring.Bounded")
-struct RingBoundedTests {
+@Suite
+struct `Buffer.Ring.Bounded Tests` {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
     @Suite struct Integration {}
@@ -13,7 +13,7 @@ struct RingBoundedTests {
 
 // MARK: - Unit
 
-extension RingBoundedTests.Unit {
+extension `Buffer.Ring.Bounded Tests`.Unit {
 
     @Test
     func `full rejection — pushBack returns element when full`() {
@@ -94,7 +94,7 @@ extension RingBoundedTests.Unit {
 
 // MARK: - Edge Cases
 
-extension RingBoundedTests.EdgeCase {
+extension `Buffer.Ring.Bounded Tests`.EdgeCase {
 
     @Test
     func `capacity-of-1 ring`() {
@@ -147,7 +147,7 @@ extension RingBoundedTests.EdgeCase {
 
 // MARK: - Integration
 
-extension RingBoundedTests.Integration {
+extension `Buffer.Ring.Bounded Tests`.Integration {
 
     @Test
     func `interleaved push/pop cycles`() {
@@ -206,7 +206,7 @@ extension RingBoundedTests.Integration {
 // the positive assertions flip to failing and the regression is caught
 // before it ships.
 
-extension RingBoundedTests.Unit {
+extension `Buffer.Ring.Bounded Tests`.Unit {
     @Test
     func `peek front and back return stable values across repeated reads (finding #12 regression guard)`() {
         var buffer = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Bounded(minimumCapacity: 4)

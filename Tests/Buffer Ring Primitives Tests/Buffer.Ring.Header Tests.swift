@@ -4,15 +4,15 @@ import Memory_Heap_Primitives
 import Storage_Contiguous_Primitives
 import Testing
 
-@Suite("Buffer.Ring.Header")
-struct RingHeaderTests {
+@Suite
+struct `Buffer.Ring.Header Tests` {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
 }
 
 // MARK: - Unit
 
-extension RingHeaderTests.Unit {
+extension `Buffer.Ring.Header Tests`.Unit {
 
     @Test
     func `init sets head to zero, count to zero`() {
@@ -96,7 +96,7 @@ extension RingHeaderTests.Unit {
 
 // MARK: - Edge Cases
 
-extension RingHeaderTests.EdgeCase {
+extension `Buffer.Ring.Header Tests`.EdgeCase {
 
     @Test
     func `cyclic head wraps at capacity`() {

@@ -17,8 +17,8 @@ import Testing
 
 // MARK: - Test Suite Structure
 
-@Suite("Buffer.Ring.Builder")
-struct RingBuilderTests {
+@Suite
+struct `Buffer.Ring.Builder Tests` {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
     @Suite struct Integration {}
@@ -35,7 +35,7 @@ private struct Move: ~Copyable {
 
 // MARK: - Iteration Helpers (drain via pop.front)
 
-extension RingBuilderTests {
+extension `Buffer.Ring.Builder Tests` {
     fileprivate static func collected(
         _ buffer: consuming Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring
     ) -> [Int] {
@@ -62,12 +62,12 @@ extension RingBuilderTests {
 
 // MARK: - Unit Tests
 
-extension RingBuilderTests.Unit {
+extension `Buffer.Ring.Builder Tests`.Unit {
 
     @Test
     func `Single element expression`() {
         let buffer: Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring { 42 }
-        #expect(RingBuilderTests.collected(buffer) == [42])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [42])
     }
 
     @Test
@@ -78,14 +78,14 @@ extension RingBuilderTests.Unit {
             3
         }
         // pop.front returns elements in declaration order (FIFO)
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 
     @Test
     func `Optional element - some`() {
         let value: Int? = 42
         let buffer: Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring { value }
-        #expect(RingBuilderTests.collected(buffer) == [42])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [42])
     }
 
     @Test
@@ -106,7 +106,7 @@ extension RingBuilderTests.Unit {
             none
             3
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 
     @Test
@@ -119,7 +119,7 @@ extension RingBuilderTests.Unit {
 
 // MARK: - Control Flow
 
-extension RingBuilderTests.Unit {
+extension `Buffer.Ring.Builder Tests`.Unit {
 
     @Test
     func `Conditional include`() {
@@ -131,7 +131,7 @@ extension RingBuilderTests.Unit {
             }
             3
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 
     @Test
@@ -144,7 +144,7 @@ extension RingBuilderTests.Unit {
             }
             3
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 3])
     }
 
     @Test
@@ -157,7 +157,7 @@ extension RingBuilderTests.Unit {
                 2
             }
         }
-        #expect(RingBuilderTests.collected(buffer) == [1])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1])
     }
 
     @Test
@@ -170,7 +170,7 @@ extension RingBuilderTests.Unit {
                 2
             }
         }
-        #expect(RingBuilderTests.collected(buffer) == [2])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [2])
     }
 
     @Test
@@ -182,13 +182,13 @@ extension RingBuilderTests.Unit {
             }
             3
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 }
 
 // MARK: - Edge Cases
 
-extension RingBuilderTests.EdgeCase {
+extension `Buffer.Ring.Builder Tests`.EdgeCase {
 
     @Test
     func `Deeply nested conditionals`() {
@@ -210,7 +210,7 @@ extension RingBuilderTests.EdgeCase {
             }
             99
         }
-        #expect(RingBuilderTests.collected(buffer) == [0, 1, 3, 4, 99])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [0, 1, 3, 4, 99])
     }
 
     @Test
@@ -227,13 +227,13 @@ extension RingBuilderTests.EdgeCase {
             9
             10
         }
-        #expect(RingBuilderTests.collected(buffer) == Swift.Array(1...10))
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == Swift.Array(1...10))
     }
 }
 
 // MARK: - Integration
 
-extension RingBuilderTests.Integration {
+extension `Buffer.Ring.Builder Tests`.Integration {
 
     @Test
     func `Builder result is mutable - pushBack continues sequence`() {
@@ -243,7 +243,7 @@ extension RingBuilderTests.Integration {
             3
         }
         buffer.push.back(4)
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3, 4])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3, 4])
     }
 
     @Test
@@ -254,20 +254,20 @@ extension RingBuilderTests.Integration {
         }
         buffer.push.front(1)
         // After push.front(1): buffer is [1, 2, 3] front-to-back
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 }
 
 // MARK: - NonCopyable
 
-extension RingBuilderTests.NonCopyable {
+extension `Buffer.Ring.Builder Tests`.NonCopyable {
 
     @Test
     func `Builder with single noncopyable element`() {
         let buffer: Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Move>>.Ring = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Move>>.Ring {
             Move(42)
         }
-        #expect(RingBuilderTests.collected(buffer) == [42])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [42])
     }
 
     @Test
@@ -277,7 +277,7 @@ extension RingBuilderTests.NonCopyable {
             Move(2)
             Move(3)
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 
     @Test
@@ -290,7 +290,7 @@ extension RingBuilderTests.NonCopyable {
             }
             Move(3)
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 2, 3])
     }
 
     @Test
@@ -303,7 +303,7 @@ extension RingBuilderTests.NonCopyable {
             }
             Move(3)
         }
-        #expect(RingBuilderTests.collected(buffer) == [1, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [1, 3])
     }
 
     @Test
@@ -316,7 +316,7 @@ extension RingBuilderTests.NonCopyable {
                 Move(20)
             }
         }
-        #expect(RingBuilderTests.collected(buffer) == [10])
+        #expect(`Buffer.Ring.Builder Tests`.collected(buffer) == [10])
     }
 
     @Test
@@ -329,12 +329,12 @@ extension RingBuilderTests.NonCopyable {
 
 // MARK: - Static Method Tests
 
-extension RingBuilderTests.StaticMethods {
+extension `Buffer.Ring.Builder Tests`.StaticMethods {
 
     @Test
     func `buildExpression single element`() {
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildExpression(42)
-        #expect(RingBuilderTests.collected(result) == [42])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [42])
     }
 
     @Test
@@ -345,14 +345,14 @@ extension RingBuilderTests.StaticMethods {
             3
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildExpression(input)
-        #expect(RingBuilderTests.collected(result) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2, 3])
     }
 
     @Test
     func `buildExpression optional - some`() {
         let value: Int? = 42
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildExpression(value)
-        #expect(RingBuilderTests.collected(result) == [42])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [42])
     }
 
     @Test
@@ -371,7 +371,7 @@ extension RingBuilderTests.StaticMethods {
             3
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildPartialBlock(first: first)
-        #expect(RingBuilderTests.collected(result) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2, 3])
     }
 
     @Test
@@ -395,7 +395,7 @@ extension RingBuilderTests.StaticMethods {
             accumulated: acc,
             next: next
         )
-        #expect(RingBuilderTests.collected(result) == [1, 2, 3, 4])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2, 3, 4])
     }
 
     @Test
@@ -412,7 +412,7 @@ extension RingBuilderTests.StaticMethods {
             2
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildOptional(component)
-        #expect(RingBuilderTests.collected(result) == [1, 2])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2])
     }
 
     @Test
@@ -430,7 +430,7 @@ extension RingBuilderTests.StaticMethods {
             2
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildEither(first: first)
-        #expect(RingBuilderTests.collected(result) == [1, 2])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2])
     }
 
     @Test
@@ -440,7 +440,7 @@ extension RingBuilderTests.StaticMethods {
             4
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildEither(second: second)
-        #expect(RingBuilderTests.collected(result) == [3, 4])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [3, 4])
     }
 
     @Test
@@ -451,6 +451,6 @@ extension RingBuilderTests.StaticMethods {
             3
         }
         let result = Buffer<Storage<Memory.Allocator<Memory.Heap>>.Contiguous<Int>>.Ring.Builder.buildLimitedAvailability(component)
-        #expect(RingBuilderTests.collected(result) == [1, 2, 3])
+        #expect(`Buffer.Ring.Builder Tests`.collected(result) == [1, 2, 3])
     }
 }

@@ -15,8 +15,8 @@ import Memory_Heap_Primitives
 import Storage_Contiguous_Primitives
 import Testing
 
-@Suite("Buffer.Ring.Bounded+Builder")
-struct RingBoundedBuilderTests {
+@Suite
+struct `Buffer.Ring.Bounded+Builder Tests` {
     @Suite struct WithinCapacity {}
     @Suite struct Overflow {}
     @Suite struct NonCopyable {}
@@ -27,7 +27,7 @@ private struct Move: ~Copyable {
     init(_ value: Int) { self.value = value }
 }
 
-extension RingBoundedBuilderTests.WithinCapacity {
+extension `Buffer.Ring.Bounded+Builder Tests`.WithinCapacity {
 
     @Test
     func `Constructs within capacity`() throws {
@@ -40,7 +40,7 @@ extension RingBoundedBuilderTests.WithinCapacity {
     }
 }
 
-extension RingBoundedBuilderTests.Overflow {
+extension `Buffer.Ring.Bounded+Builder Tests`.Overflow {
 
     @Test
     func `Throws on overflow`() {
@@ -57,7 +57,7 @@ extension RingBoundedBuilderTests.Overflow {
     }
 }
 
-extension RingBoundedBuilderTests.NonCopyable {
+extension `Buffer.Ring.Bounded+Builder Tests`.NonCopyable {
 
     @Test
     func `Constructs noncopyable bounded ring`() throws {

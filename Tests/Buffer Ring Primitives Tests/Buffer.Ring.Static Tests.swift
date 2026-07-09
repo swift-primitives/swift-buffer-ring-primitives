@@ -4,15 +4,15 @@ import Memory_Heap_Primitives
 import Storage_Contiguous_Primitives
 import Testing
 
-@Suite("Buffer.Ring Static Operations")
-struct RingStaticTests {
+@Suite
+struct `Buffer.Ring.Static Tests` {
     @Suite struct Unit {}
     @Suite struct EdgeCase {}
 }
 
 // MARK: - Unit
 
-extension RingStaticTests.Unit {
+extension `Buffer.Ring.Static Tests`.Unit {
 
     @Test
     func `pushBack/popFront FIFO ordering`() {
@@ -128,7 +128,7 @@ extension RingStaticTests.Unit {
 
 // MARK: - Edge Cases
 
-extension RingStaticTests.EdgeCase {
+extension `Buffer.Ring.Static Tests`.EdgeCase {
 
     @Test
     func `wrap-around correctness`() {
