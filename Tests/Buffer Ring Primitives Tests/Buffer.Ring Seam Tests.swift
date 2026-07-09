@@ -146,7 +146,9 @@ private struct SeamItem: ~Copyable {
 
 /// Per-suite recorder (the deterministic-gate rule: cross-suite parallelism races a
 /// shared recorder).
-private enum SeamProbe {
+private enum SeamProbe {}
+
+extension SeamProbe {
     nonisolated(unsafe) static var _destroyed: [Int] = []
     static func reset() { unsafe _destroyed = [] }
     static func recordDestroy(_ id: Int) { unsafe _destroyed.append(id) }
