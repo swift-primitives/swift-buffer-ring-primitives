@@ -17,13 +17,13 @@ import Testing
 // is `Memory.Growable`, so form-2 applies; a `Memory.Inline` leaf would (correctly)
 // not satisfy the growth-op fence.
 
-@Suite("Buffer.Ring .Small coverage")
-struct RingSmallCoverageTests {
+@Suite
+struct `Buffer.Ring.Small Tests` {
     // `Memory.Small`'s n is a BYTE budget: 64 bytes ≈ 8 `Int`s inline before spilling.
     typealias SmallColumn = Storage<Memory.Allocator<Memory.Small<64>>>.Contiguous<Int>
 }
 
-extension RingSmallCoverageTests {
+extension `Buffer.Ring.Small Tests` {
 
     @Test
     func `construct + enqueue (form-2, inline→heap spill) + drain via popFront (form-1)`() {
